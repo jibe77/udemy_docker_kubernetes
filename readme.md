@@ -333,3 +333,9 @@ Le code va être mis sur GitHub, avec un déclancheur vers GitHub Actions afin d
 Le fichier de configuration est ".github/workflows/deploy.yaml".
 
 Il indique la liste des commandes à lancer.
+
+![execution](images/01_github_action_execution.png)
+
+![test](images/02_github_action_test.png)
+
+![run](images/03_github_action_run.png)
