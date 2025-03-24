@@ -330,7 +330,7 @@ On lance la création de l'image et on la lance :
 
 Le code va être mis sur GitHub, avec un déclancheur vers GitHub Actions afin de construire l'image.
 
-Le fichier de configuration est ".github/workflows/deploy.yaml".
+Le fichier de configuration du pipeline est [.github/workflows/main.yml](https://github.com/jibe77/udemy_docker_kubernetes/blob/main/.github/workflows/main.yml).
 
 Il indique la liste des commandes à lancer.
 
@@ -339,3 +339,69 @@ Il indique la liste des commandes à lancer.
 ![test](images/02_github_action_test.png)
 
 ![run](images/03_github_action_run.png)
+
+Le cours explique la création de l'environnement AWS. Ici le S3 Bucket pour déposer les fichiers : 
+
+![run](images/04_aws_s3.png) 
+
+Ici l'environnement elastic beanstalk :
+
+![run](images/05_aws_ebs.png)
+
+Ici la configuration de l'accès afin de permettre au script sur GitHub d'accéder à l'environnement AWS :
+
+![run](images/06_aws_iam.png)
+
+L'environnement créé se présente sous cette forme : 
+
+![run](images/07_aws_ebs_env.png) 
+
+Les identifiants pour accéder à DockerHub et AWS depuis le script GitHub sont enregistrés dans ces variables d'environnement : 
+
+![run](images/08_github_action_secrets.png)
+
+Dès qu'un push est fait vers GitHub, le script se lance afin de déployer la nouvelle version :
+
+![run](images/09_github_action_deploy.png)
+
+![run](images/10_github_action_deploy_to_aws.png)
+
+Voici l'application une fois qu'elle est déployée sur le Cloud AWS : 
+
+![run](images/11_aws_ebs_deployed.png)
+
+## section 9 : 
+
+Cette section propose de mettre en place un environnement de développement et de production pour une application.
+
+Celle-ci est basée sur un serveur NodeJS avec le framework Express ainsi que les bases de données Redis et PostgreSQL.
+
+La partie cliente est basée sur React.
+
+L'utilisation qui est faite de Docker est de créer des conteneurs afin de déployer efficacement chaque module de l'application.
+
+- image du client : client/Dockerfile.dev
+
+- image du serveur : server/Dockerfile.dev
+
+- image du worker (simulation d'un service tier) : worker/Dockerfile.dev
+
+L'orchestration est faite avec Docker-Compose afin de gérer l'exécution de ces conteneurs ainsi que le serveur nginx, 
+
+et les bases de données : 
+
+- docker-compose.yml
+
+La commande suivante permet donc de déployer l'infrastructure complète : 
+
+    % docker-compose up --build
+
+La copie d'écran suivante montre le lancement l'application dans le terminal :
+
+TODO : image 13 : build
+
+TODO : image 14 : run
+
+La copie d'écran suivante montre l'application en fonctionnement : 
+
+TODO : image 12
