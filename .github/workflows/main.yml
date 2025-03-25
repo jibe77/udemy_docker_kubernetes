@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: section7/frontend-gh-actions
+        working-directory: section07/frontend-gh-actions
     steps:
       - uses: actions/checkout@v2
       - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -29,4 +29,4 @@ jobs:
           existing_bucket_name: elasticbeanstalk-eu-west-3-728724001227
           region: eu-west-3
           version_label: ${{ github.sha }}
-          deployment_package: section7/frontend-gh-actions/deploy.zip
+          deployment_package: section07/frontend-gh-actions/deploy.zip
