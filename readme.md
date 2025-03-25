@@ -372,7 +372,7 @@ Voici l'application une fois qu'elle est déployée sur le Cloud AWS :
 
 ## section 9 : 
 
-Cette section propose de mettre en place un environnement de développement et de production pour une application.
+Cette section propose de mettre en place un environnement de développement pour une application.
 
 Celle-ci est basée sur un serveur NodeJS avec le framework Express ainsi que les bases de données Redis et PostgreSQL.
 
@@ -380,11 +380,11 @@ La partie cliente est basée sur React.
 
 L'utilisation qui est faite de Docker est de créer des conteneurs afin de déployer efficacement chaque module de l'application.
 
-- image du client : client/Dockerfile.dev
+- image du client : [client/Dockerfile.dev](https://github.com/jibe77/udemy_docker_kubernetes/blob/main/section09/complex/client/Dockerfile.dev)
 
-- image du serveur : server/Dockerfile.dev
+- image du serveur : [server/Dockerfile.dev](https://github.com/jibe77/udemy_docker_kubernetes/blob/main/section09/complex/server/Dockerfile.dev)
 
-- image du worker (simulation d'un service tier) : worker/Dockerfile.dev
+- image du worker (simulation d'un service tier) : [worker/Dockerfile.dev](https://github.com/jibe77/udemy_docker_kubernetes/blob/main/section09/complex/worker/Dockerfile.dev)
 
 L'orchestration est faite avec Docker-Compose afin de gérer l'exécution de ces conteneurs ainsi que le serveur nginx, 
 
@@ -405,3 +405,7 @@ La copie d'écran suivante montre le lancement l'application dans le terminal :
 La copie d'écran suivante montre l'application en fonctionnement : 
 
 ![run](images/12_docker_compose_react_app.png)
+
+## section 10
+
+Le cours continue la configuration Docker afin de préparer un environnement de production.

@@ -5,7 +5,7 @@ on:
       - main
 
 jobs:
-  build:
+  build_section07:
     runs-on: ubuntu-latest
     defaults:
       run:
