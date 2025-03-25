@@ -1,0 +1,30 @@
+version: "3"
+services:
+  client:
+    image: jibe77/multi-client
+    container_name: client
+    restart: always
+    mem_limit: 128m
+
+  server:
+    image: jibe77/multi-server
+    container_name: api
+    restart: always
+    mem_limit: 128m
+
+  worker:
+    image: jibe77/multi-worker
+    container_name: worker
+    restart: always
+    mem_limit: 128m
+
+  nginx:
+    image: jibe77/multi-nginx
+    container_name: nginx
+    restart: always
+    mem_limit: 128m
+    ports:
+      - "80:80"
+    depends_on:
+      - client
+      - server
