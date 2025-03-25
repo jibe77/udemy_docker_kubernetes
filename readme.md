@@ -398,10 +398,10 @@ La commande suivante permet donc de déployer l'infrastructure complète :
 
 La copie d'écran suivante montre le lancement l'application dans le terminal :
 
-TODO : image 13 : build
+![run](images/13_docker_compose_build.png)
 
-TODO : image 14 : run
+![run](images/14_docker_compose_run.png)
 
 La copie d'écran suivante montre l'application en fonctionnement : 
 
-TODO : image 12
+![run](images/12_docker_compose_react_app.png)
