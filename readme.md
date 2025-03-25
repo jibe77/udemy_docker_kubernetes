@@ -421,3 +421,11 @@ Voici les images publiées sur mon compte DockerHub :
 ![run](images/16_docker_hub.png)
 
 Lien vers mon compte Docker Hub : https://hub.docker.com/repositories/jibe77
+
+## Section 11 : déploiement sur AWS
+
+Le déploiement se fait via un fichier de description de l'environnement.
+
+Il réutilise des services d'AWS plutôt que d'instancier des conteneurs, comme Redis et PostgreSQL.
+
+

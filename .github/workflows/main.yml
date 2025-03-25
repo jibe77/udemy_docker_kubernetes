@@ -31,11 +31,11 @@ jobs:
           version_label: ${{ github.sha }}
           deployment_package: section07/frontend-gh-actions/deploy.zip
 
-  build_section10:
+  build_section11:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: section10/complex
+        working-directory: section11/complex
     steps:
       - uses: actions/checkout@v3
       - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
