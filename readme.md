@@ -398,14 +398,26 @@ La commande suivante permet donc de déployer l'infrastructure complète :
 
 La copie d'écran suivante montre le lancement l'application dans le terminal :
 
-![run](images/13_docker_compose_build.png)
+![build](images/13_docker_compose_build.png)
 
 ![run](images/14_docker_compose_run.png)
 
 La copie d'écran suivante montre l'application en fonctionnement : 
 
-![run](images/12_docker_compose_react_app.png)
+![app](images/12_docker_compose_react_app.png)
 
 ## section 10
 
 Le cours continue la configuration Docker afin de préparer un environnement de production.
+
+La principale modification qui nous intéresse, en lien direct avec le sujet, est la publication des images Docker sur Docker Hub.
+
+Voici l'action GitHub qui est modifiée pour en scripter l'automatisation : 
+
+![run](images/15_github_action_docker_push.png)
+
+Voici les images publiées sur mon compte DockerHub : 
+
+![run](images/16_docker_hub.png)
+
+Lien vers mon compte Docker Hub : https://hub.docker.com/repositories/jibe77
