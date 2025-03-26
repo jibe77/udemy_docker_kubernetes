@@ -428,4 +428,64 @@ Le déploiement se fait via un fichier de description de l'environnement.
 
 Il réutilise des services d'AWS plutôt que d'instancier des conteneurs, comme Redis et PostgreSQL.
 
+Le script [.github/workflows/main.yml](https://github.com/jibe77/udemy_docker_kubernetes/blob/main/.github/workflows/main.yml) a été modifié afin de déployer automatiquement depuis GitHub 
 
+      build_section11:
+        runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: section11/complex
+        steps:
+          - uses: actions/checkout@v3
+          - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          - run: docker build -t jibe77/react-test -f ./client/Dockerfile.dev ./client
+          - run: docker run -e CI=true jibe77/react-test npm test
+    
+          - run: docker build -t jibe77/multi-client ./client
+          - run: docker build -t jibe77/multi-nginx ./nginx
+          - run: docker build -t jibe77/multi-server ./server
+          - run: docker build -t jibe77/multi-worker ./worker
+    
+          - run: docker push jibe77/multi-client
+          - run: docker push jibe77/multi-nginx
+          - run: docker push jibe77/multi-server
+          - run: docker push jibe77/multi-worker
+    
+          - name: Generate deployment package
+            run: zip -r deploy.zip . -x '*.git*'
+    
+          - name: Deploy to EB
+            uses: einaregilsson/beanstalk-deploy@v22
+            with:
+              aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+              aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+              application_name: multi-docker
+              environment_name: Multi-docker-env
+              existing_bucket_name: elasticbeanstalk-eu-west-3-728724001227
+              region: eu-west-3
+              version_label: ${{ github.sha }}
+              deployment_package: section11/complex/deploy.zip
+
+Le script de lancement de l'application sur l'environnement Beanstalk se situe ici : https://github.com/jibe77/udemy_docker_kubernetes/blob/main/section11/complex/.ebextensions/docker-compose.yml
+
+l'application sur l'environnement AWS Elastic Beanstalk :
+
+![run](images/17_github_action_deploy_eb.png)
+
+L'environnement est constitué notamment d'une base de donnée Postgre basé sur AWS RDS, et de Reddis basé sur ElastiCache :
+
+![archi](images/22_archi.drawio.png)
+
+Voici les instances Postgre et Reddis sur la console d'administration AWS : 
+
+![reddis](images/20_aws_reddis.png)
+
+![postgres](images/21_aws_postgres.png)
+
+Voici l'environnement Elastic Beanstalk, qui est une solution PAAS : 
+
+![postgres](images/18_aws_eb_env.png)
+
+Voici une copie d'écran de l'application déployée : 
+
+![postgres](images/19_aws_eb_app.png)
