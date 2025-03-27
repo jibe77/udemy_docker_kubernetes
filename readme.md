@@ -484,8 +484,61 @@ Voici les instances Postgre et Reddis sur la console d'administration AWS :
 
 Voici l'environnement Elastic Beanstalk, qui est une solution PAAS : 
 
-![postgres](images/18_aws_eb_env.png)
+![env](images/18_aws_eb_env.png)
 
 Voici une copie d'écran de l'application déployée : 
 
-![postgres](images/19_aws_eb_app.png)
+![app](images/19_aws_eb_app.png)
+
+## Section 12 : création d'un environnement Kubernetes
+
+J'ai eu des problèmes à lancer Kubernetes sur MacOS via Docket Desktop.
+
+Je suis donc passé sur une machine virtuelle Ubuntu pour installer Minikube.
+
+    $ minikube status
+
+    minikube
+    type: Control Plane
+    host: Running
+    kubelet: Running
+    apiserver: Running
+    kubeconfig: Configured
+
+Pour appliquer un fichier de configuration :
+
+    $ kubectl apply -f <filename>
+
+On ajoute notre environnement : 
+
+    $ kubectl apply -f client-pod.yaml  
+    pod/client-pod created
+
+    $ kubectl apply -f client-node-port.yaml 
+    service/client-node-port created
+
+On récupère l'état des pods (conteneurs) et des services (réseau) : 
+
+    $ kubectl get pods
+    NAME         READY   STATUS    RESTARTS   AGE
+    client-pod   1/1     Running   0          6m10s
+
+    $ kubectl get services
+    NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+    client-node-port   NodePort    10.110.130.181   <none>        3050:31515/TCP   2m46s
+    kubernetes         ClusterIP   10.96.0.1        <none>        443/TCP          63m
+
+Quand on consulte l'environnement, il faut utiliser l'adresse IP utilisée par Minikube : 
+
+    $ $ minikube ip
+    192.168.49.2
+
+On peut ensuite ouvrir l'application web via http://192.168.49.2:31515 comme on le voit sur cette copie d'écran : 
+
+![k8s running](images/23_k8s_running)
+
+Le cours explique le fonctionnement déclaratif des fichiers de configuration. Les fichiers décrivent en effet l'architecture que l'on souhaite et k8s la met en place et prend en charge tout ce qu'il faut.
+
+C'est différent d'un environnement impératif où l'on devrait déclarer les opérations à réaliser.
+
+kubectl apply est une commande déclarative. Cela signifie que vous déclarez l'état final souhaité des ressources, et Kubernetes s'assure que le cluster reflète cet état. 
