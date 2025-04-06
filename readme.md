@@ -530,12 +530,12 @@ On récupère l'état des pods (conteneurs) et des services (réseau) :
 
 Quand on consulte l'environnement, il faut utiliser l'adresse IP utilisée par Minikube : 
 
-    $ $ minikube ip
+    $ minikube ip
     192.168.49.2
 
 On peut ensuite ouvrir l'application web via http://192.168.49.2:31515 comme on le voit sur cette copie d'écran : 
 
-![k8s running](images/23_k8s_running)
+![k8s running](images/23_k8s.drawio.png)
 
 Le cours explique le fonctionnement déclaratif des fichiers de configuration. Les fichiers décrivent en effet l'architecture que l'on souhaite et k8s la met en place et prend en charge tout ce qu'il faut.
 
