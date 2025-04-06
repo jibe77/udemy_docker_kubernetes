@@ -542,3 +542,328 @@ Le cours explique le fonctionnement déclaratif des fichiers de configuration. L
 C'est différent d'un environnement impératif où l'on devrait déclarer les opérations à réaliser.
 
 kubectl apply est une commande déclarative. Cela signifie que vous déclarez l'état final souhaité des ressources, et Kubernetes s'assure que le cluster reflète cet état. 
+
+## Section 13 : Maintenance
+
+Dans un premier temps, il est expliqué comment mettre à jour un Pod en modifiant le contenu de son fichier de configuration.
+
+On modifie donc le fichier client-pod.yaml pour utiliser l'image multi-worker à la place de multi-client.
+
+    image: stephengrider/multi-worker
+
+On exécute ensuite la commande kubectl apply -f client-pod.yaml pour appliquer la modification.
+
+    $ kubectl apply -f client-pod.yaml 
+    pod/client-pod configured
+
+    $ kubectl get pods
+    NAME         READY   STATUS    RESTARTS      AGE
+    client-pod   1/1     Running   3 (56s ago)   29h
+
+    $ kubectl describe pod client-pod
+    Name:             client-pod
+    Namespace:        default
+    Priority:         0
+    Service Account:  default
+    Node:             minikube/192.168.49.2
+    Start Time:       Thu, 27 Mar 2025 17:42:46 +0100
+    Labels:           component=web
+    Annotations:      <none>
+    Status:           Running
+    IP:               10.244.0.8
+    IPs:
+    IP:  10.244.0.8
+    Containers:
+    client:
+        Container ID:   docker://7c78cbfbebf2a5c837530e1079e33c3604571c394c092f62967bb4f81390e5c6
+        Image:          stephengrider/multi-worker
+        Image ID:       docker-pullable://stephengrider/multi-worker@sha256:5fbab5f86e6a4d499926349a5f0ec032c42e7f7450acc98b053791df26dc4d2b
+        Port:           3000/TCP
+        Host Port:      0/TCP
+        State:          Running
+        Started:      Fri, 28 Mar 2025 23:40:19 +0100
+        Last State:     Terminated
+        Reason:       Completed
+        Exit Code:    0
+        Started:      Thu, 27 Mar 2025 22:02:45 +0100
+        Finished:     Fri, 28 Mar 2025 23:40:07 +0100
+        Ready:          True
+        Restart Count:  3
+        Environment:    <none>
+        Mounts:
+        /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-r8lzj (ro)
+    Conditions:
+    Type                        Status
+    PodReadyToStartContainers   True 
+    Initialized                 True 
+    Ready                       True 
+    ContainersReady             True 
+    PodScheduled                True 
+    Volumes:
+    kube-api-access-r8lzj:
+        Type:                    Projected (a volume that contains injected data from multiple sources)
+        TokenExpirationSeconds:  3607
+        ConfigMapName:           kube-root-ca.crt
+        ConfigMapOptional:       <nil>
+        DownwardAPI:             true
+    QoS Class:                   BestEffort
+    Node-Selectors:              <none>
+    Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                                node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+    Events:
+    Type    Reason   Age                  From     Message
+    ----    ------   ----                 ----     -------
+    Normal  Killing  4m10s                kubelet  Container client definition changed, will be restarted
+    Normal  Pulling  4m10s                kubelet  Pulling image "stephengrider/multi-worker"
+    Normal  Created  3m58s (x2 over 25h)  kubelet  Created container: client
+    Normal  Started  3m58s (x2 over 25h)  kubelet  Started container client
+    Normal  Pulled   3m58s                kubelet  Successfully pulled image "stephengrider/multi-worker" in 11.624s (11.624s including waiting). Image size: 79666111 bytes.
+
+Par contre il n'est possible de tout changer à chaud. Pour faire cela, il faut utiliser un 'deployment' à la place d'un pod. Les 'deployments' sont conseillés pour une utilisation en prod, même s'ils sont adaptés pour les environnement de dev également.
+
+Voici le fichier de configuration que l'on va utiliser pour notre 'deployment' : 
+
+    apiVersion: v1
+    kind: Deployment
+    metadata:
+    name: client-deployment
+    spec:
+        replicas: 1
+        selector:
+            matchLabels:
+                component: web
+        template:
+            metadata:
+                labels:
+                    component: web
+            spec:
+                containers:
+                    - name: client
+                    image: stephengrider/multi-client
+                    ports:
+                        - containerPort: 3000
+
+Avant de l'application on supprime le pod : 
+
+    $ kubectl delete -f client-pod.yaml
+    pod "client-pod" deleted
+
+On peut ensuite appliquer le fichier : 
+
+    $ kubectl apply -f client-deployment.yaml 
+    deployment.apps/client-deployment created
+
+    $ kubectl get deployments
+    NAME                READY   UP-TO-DATE   AVAILABLE   AGE
+    client-deployment   1/1     1            1           37s
+
+    $ kubectl get pods
+    NAME                                 READY   STATUS    RESTARTS   AGE
+    client-deployment-648f484756-78x4d   1/1     Running   0          68s
+
+En tapant cette commande on voit la configuration réseau interne du pod géré par le 'deployment' : 
+
+    $ kubectl get pods -o wide
+    NAME                                 READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+    client-deployment-648f484756-78x4d   1/1     Running   0          4m18s   10.244.0.9   minikube   <none>           <none>
+
+Le port 3000 et l'adresse IP ne sont utilisés qu'en interne, l'utilisateur de l'application n'y a pas accès.
+
+Pour mettre à jour l'image des conteneur, il est conseillé de spécifier le numéro de version de ce dernier dans les fichiers de configuration k8s.
+
+Il vaut mieux utiliser un numéro de version plutôt qu'un alias tel que "latest", car k8s ne va pas mettre à jour l'image s'il a déjà téléchargé la dernière image. En effet il ne va pas vérifier si c'est une nouvelle image vers laquelle latest pointe.
+
+On peut mettre à jour la version des images à utiliser dans un 'deployment' en utilisant cette commande kubectl :
+
+    $ kubectl set image deployment/client-deployment client=stephengrider/multi-client:v5
+
+On peut configurer Docker CLI afin d'utiliser l'instance docker qui tourne dans Kubernetes :
+
+    $ eval $(minikube docker-env)
+    $ docker ps
+    CONTAINER ID   IMAGE                        COMMAND                  CREATED        STATUS        PORTS     NAMES
+    1c50c32e8505   stephengrider/multi-client   "nginx -g 'daemon of…"   24 hours ago   Up 24 hours             k8s_client_client-deployment-648f484756-78x4d_default_0a9f3919-6e09-49c6-8eb3-3c6470b7b160_0
+    06ff3497b4b9   registry.k8s.io/pause:3.10   "/pause"                 24 hours ago   Up 24 hours             k8s_POD_client-deployment-648f484756-78x4d_default_0a9f3919-6e09-49c6-8eb3-3c6470b7b160_0
+    58a442d4b1c8   6e38f40d628d                 "/storage-provisioner"   2 days ago     Up 2 days               k8s_storage-provisioner_storage-provisioner_kube-system_8adbf746-c4e8-4115-b7ee-071d4542e033_4
+    4b976e83e08d   c69fa2e9cbf5                 "/coredns -conf /etc…"   2 days ago     Up 2 days               k8s_coredns_coredns-668d6bf9bc-mxdpc_kube-system_ffdc753a-21a5-4fc7-807f-0f37963ccf67_2
+    8c9794b7d275   040f9f8aac8c                 "/usr/local/bin/kube…"   2 days ago     Up 2 days               k8s_kube-proxy_kube-proxy-jv9mj_kube-system_db866946-8b37-45cc-a05a-64e0b2b24eb6_2
+    d49485857c9a   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_coredns-668d6bf9bc-mxdpc_kube-system_ffdc753a-21a5-4fc7-807f-0f37963ccf67_2
+    a34b7f5f2913   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_kube-proxy-jv9mj_kube-system_db866946-8b37-45cc-a05a-64e0b2b24eb6_2
+    cf22f5bec0f3   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_storage-provisioner_kube-system_8adbf746-c4e8-4115-b7ee-071d4542e033_2
+    3cf8a67a8b83   c2e17b8d0f4a                 "kube-apiserver --ad…"   2 days ago     Up 2 days               k8s_kube-apiserver_kube-apiserver-minikube_kube-system_d72d0a4cf4be077c9919d46b7358a5e8_2
+    45a3a4c761d7   a389e107f4ff                 "kube-scheduler --au…"   2 days ago     Up 2 days               k8s_kube-scheduler_kube-scheduler-minikube_kube-system_d14ce008bee3a1f3bd7cf547688f9dfe_2
+    a74987fc4683   a9e7e6b294ba                 "etcd --advertise-cl…"   2 days ago     Up 2 days               k8s_etcd_etcd-minikube_kube-system_2b4b75c2a289008e0b381891e9683040_2
+    ebf583fd6fe8   8cab3d2a8bd0                 "kube-controller-man…"   2 days ago     Up 2 days               k8s_kube-controller-manager_kube-controller-manager-minikube_kube-system_843c74f7b3bc7d7040a05c31708a6a30_2
+    8a900d7c0375   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_kube-scheduler-minikube_kube-system_d14ce008bee3a1f3bd7cf547688f9dfe_2
+    32a5f24f6b28   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_kube-apiserver-minikube_kube-system_d72d0a4cf4be077c9919d46b7358a5e8_2
+    f6843fe46f08   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_etcd-minikube_kube-system_2b4b75c2a289008e0b381891e9683040_2
+    9c0fc2da5c02   registry.k8s.io/pause:3.10   "/pause"                 2 days ago     Up 2 days               k8s_POD_kube-controller-manager-minikube_kube-system_843c74f7b3bc7d7040a05c31708a6a30_2
+
+L'intéret est de pouvoir débugger le fonctionnement du master, par exemple : 
+
+    $ docker log 9c0fc2da5c02
+
+    $ docker exec -it 9c0fc2da5c02
+
+Il y a des commandes avec kubectl pour accéder aux pods :
+
+    $ kubectl get pods
+    NAME                                 READY   STATUS    RESTARTS   AGE
+    client-deployment-648f484756-78x4d   1/1     Running   0          24h
+
+    jb@jb-VMware-Virtual-Platform:~/Documents/udemy_docker_kubernetes/section13/simplek8s$ kubectl logs client-deployment-648f484756-78x4d
+    ls
+
+    jb@jb-VMware-Virtual-Platform:~/Documents/udemy_docker_kubernetes/section13/simplek8s$ kubectl exec -it client-deployment-648f484756-78x4d -- sh
+    # ls
+    bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+## section 14 : passage de l'application multi-conteneur à Kubernetes
+
+![k8s](images/23_k8s.drawio.png)
+
+On écrit un fichier de déploiement k8s.
+
+On utilise un service ClusterIP lorsqu'il y a des communications entre les services internes.
+
+Un service de type ClusterIP dans Kubernetes est utilisé pour exposer un ensemble de pods à l'intérieur d'un cluster.
+
+Un service ClusterIP permet aux pods de communiquer entre eux au sein du même cluster. Il fournit une adresse IP stable et un nom DNS qui peuvent être utilisés par d'autres pods pour accéder aux services.
+
+Stabilité : Les pods sont éphémères et peuvent être redémarrés, déplacés ou supprimés. Un service ClusterIP offre une couche d'abstraction qui permet de maintenir une adresse IP stable même si les pods sous-jacents changent.
+
+Le service ClusterIP peut répartir le trafic entrant entre plusieurs pods, ce qui permet de distribuer la charge de travail et d'améliorer la disponibilité et la résilience des applications.
+
+Les services ClusterIP ne sont accessibles qu'à l'intérieur du cluster, ce qui offre une couche supplémentaire de sécurité en limitant l'accès aux services uniquement aux composants internes du cluster.
+
+On remarque que le deployment du worker n'a pas de Cluster IP car personne ne vient se connecter à lui. C'est ce composant qui va se connecter avec d'autres composants. Il n'est donc pas nécessaire de l'interfacer avec un Cluster IP.
+
+Sur l'environnement de production, on a 11 composants à configurer. Il est possible de rassembler tout dans le même fichier de configuration mais c'est plus logique de les séparer dans des fichiers séparés.
+
+On lance l'exécution de l'environnement configuré dans le répertoire k8s : 
+
+    $ kubectl apply -f k8s
+    service/client-cluster-ip-service configured
+    deployment.apps/client-deployment unchanged
+    service/client-cluster-ip-service configured
+    deployment.apps/server-deployment unchanged
+    deployment.apps/worker-deployment unchanged
+
+On peut débugger le fonctionnement des pods, on voit ici qu'un serveur n'arrive pas à se connecter : 
+
+    $ kubectl get pods
+    NAME                                 READY   STATUS    RESTARTS   AGE
+    client-deployment-648f484756-l2rz7   1/1     Running   0          33m
+    client-deployment-648f484756-pdg6h   1/1     Running   0          33m
+    client-deployment-648f484756-zjgkt   1/1     Running   0          33m
+    server-deployment-78df9887cc-j44cm   1/1     Running   0          5m4s
+    server-deployment-78df9887cc-nw5t7   1/1     Running   0          5m5s
+    server-deployment-78df9887cc-xmr2w   1/1     Running   0          5m4s
+    worker-deployment-6c877f9b66-cjfg4   1/1     Running   0          4m6s
+
+    jb@jb-VMware-Virtual-Platform:~/Documents/udemy_docker_kubernetes/section14/complex-gh$ kubectl logs server-deployment-78df9887cc-j44cm
+
+    > @ start /app
+    > node index.js
+
+    Listening
+    { Error: connect ECONNREFUSED 127.0.0.1:5432
+        at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1161:14)
+    errno: 'ECONNREFUSED',
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 5432 }
+
+La configuration continue avec l'ensemble des objets, avec notamment l'utilisation des deux bases de données PostGreSQL et Reddis.
+
+La configuration de PostGreSQL se base sur l'utilisation d'un volume persistant dans le fichier suivant : 
+
+https://github.com/jibe77/udemy_docker_kubernetes/section14/complex-gh/k8s/database-persistent-volume-claim.yaml : 
+
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+    name: database-persistent-volume-claim
+    spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+        storage: 2Gi
+
+
+Il faut renseigner les mots de passe en utilisant une commande spéciale : 
+
+    $ kubectl create secret generic pgpasswd --from-literal PGPASSWORD=12345asdf
+
+    $ kubectl get secrets
+    NAME       TYPE     DATA   AGE
+    pgpasswd   Opaque   1      10s
+
+Ce secret est récupéré dans l'objet du serveur : 
+
+    env:
+    - name: REDIS_HOST
+        value: redis-cluster-ip-service
+    - name: REDIS_PORT
+        value: '6379'
+    - name: PGUSER
+        value: postgres
+    - name: PGHOST
+        value: postgres-cluster-ip-service
+    - name: PGPORT
+        value: '5432'
+    - name: PGDATABASE
+        value: postgres
+    - name: PGPASSWORD
+        valueFrom:
+        secretKeyRef:
+            name: pgpassword
+            key: PGPASSWORD
+
+De même dans le fichier de configuration de PostGres : 
+
+    containers:
+    - name: postgres
+        image: postgres
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+            mountPath: /var/lib/postgresql/data
+            subPath: postgres
+        env:
+        - name: POSTGRES_PASSWORD
+            valueFrom:
+            secretKeyRef:
+                name: pgpassword
+                key: PGPASSWORD
+
+## section 15 : configuration du reverse-proxy et serveur web Ingress
+
+On ajoute un fichier afin de configurer un objet pour le serveur Ingress.
+
+Il sert à fournir une redirection des appels vers l'API pour le backend.
+
+Il gère également les appels HTTP vers la partie cliente.
+
+On peut ensuite intéroger l'application : 
+
+    $ minikube addons enable ingress
+
+    $ minikube ip
+    192.168.49.2
+
+Voici une copie d'écran :
+
+![webapp](images/24_webapp.png)
+
+On peut accéder au panneau de configuration de minikube avec la commande suivante :
+
+    $ minikube dashboard
+
+Cela ouvre le navigateur : 
+
+![dashboard](images/25_dahboard.png)
+
