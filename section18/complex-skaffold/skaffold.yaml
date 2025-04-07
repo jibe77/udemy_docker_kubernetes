@@ -9,7 +9,7 @@ build:
   local:
     push: false
   artifacts:
-    - image: rallycoding/client-skaffold
+    - image: jibe77/client-skaffold
       context: client
       docker:
         dockerfile: Dockerfile.dev
@@ -21,7 +21,7 @@ build:
             dest: .
           - src: "src/**/*.html"
             dest: .
-    - image: rallycoding/worker-skaffold
+    - image: jibe77/worker-skaffold
       context: worker
       docker:
         dockerfile: Dockerfile.dev
@@ -29,7 +29,7 @@ build:
         manual:
           - src: "*.js"
             dest: .
-    - image: rallycoding/server-skaffold
+    - image: jibe77/server-skaffold
       context: server
       docker:
         dockerfile: Dockerfile.dev

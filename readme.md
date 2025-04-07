@@ -917,6 +917,20 @@ On peut s'y connecter depuis internet :
 
 Skaffold permet de pouvoir mettre à jour son code source de façon dynamique.
 
-Ainsi on a pas besoin de redéployer les conteneurs.
+Il automatise la construction des images Docker. Il surveille les modifications dans le code source et déclenche automatiquement une nouvelle construction lorsqu'il détecte des changements.
 
-TODO
+Il faut déjà installer Skaffold :
+
+    $ curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && \
+    
+    $  sudo install skaffold /usr/local/bin/
+
+Ensuite le fichier https://github.com/jibe77/udemy_docker_kubernetes/blob/main/section18/complex-skaffold/skaffold.yaml permet de déployer l'environnement Kubernetes.
+
+Ce fichier spécifie les images Docker à utiliser, les configurations de build, et les ressources Kubernetes (comme les déploiements, les services, etc.).
+
+Skaffold peut automatiser la construction des images Docker. Il surveille les modifications dans le code source et déclenche automatiquement une nouvelle construction lorsqu'il détecte des changements.
+
+Skaffold peut également nettoyer les ressources créées pendant le développement, comme les images Docker et les ressources Kubernetes, pour éviter l'accumulation de ressources inutilisées.
+
+Skaffold est principalement conçu pour gérer le cycle de vie des applications et non pour la gestion des données persistantes. Il faut ainsi utiliser des solutions de stockage persistant comme les volumes persistants (Persistent Volumes) de Kubernetes pour gérer les données qui doivent survivre aux redémarrages des pods.
