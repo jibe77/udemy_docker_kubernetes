@@ -1,10 +1,10 @@
 # Notes de cours sur Docker et Kubernetes 
 
-## Section 1 
+## Section 1 : introduction
 
 Installation et défnition des termes
 
-## Section 2 
+## Section 2 : présentation de Docker
 
 docker run "image name"
 
@@ -78,7 +78,7 @@ pour ouvrir un promp on lance bash :
     
     $ docker run -it busybox sh
 
-## Section 3
+## Section 3 : Utilisation de Docker
 
 Dockerfile utilisé pour la démonstration :
     
@@ -151,7 +151,7 @@ docker commit a pour objectif de créer une nouvelle image à partir d'un conten
 
 En résumé, docker tag est utilisé pour gérer les noms et les tags des images, tandis que docker commit est utilisé pour créer de nouvelles images à partir de conteneurs modifiés.
 
-## Section 4 : real project
+## Section 4 : Mise en place d'un projet
 
 Create a web application with nodejs : 
 
@@ -370,9 +370,9 @@ Voici l'application une fois qu'elle est déployée sur le Cloud AWS :
 
 ![run](images/11_aws_ebs_deployed.png)
 
-## section 9 : 
+## section 9 : Lancement de l'application avec Docker-Compose
 
-Cette section propose de mettre en place un environnement de développement pour une application.
+Cette section propose de mettre en place un environnement de développement pour l'application.
 
 Celle-ci est basée sur un serveur NodeJS avec le framework Express ainsi que les bases de données Redis et PostgreSQL.
 
@@ -406,7 +406,7 @@ La copie d'écran suivante montre l'application en fonctionnement :
 
 ![app](images/12_docker_compose_react_app.png)
 
-## section 10
+## section 10 : Mise en place de l'environnement de production
 
 Le cours continue la configuration Docker afin de préparer un environnement de production.
 
@@ -867,3 +867,32 @@ Cela ouvre le navigateur :
 
 ![dashboard](images/25_dahboard.png)
 
+## section 16 : déploiement sur le cloud Google
+
+L'application va être déployée sur un compte Google Cloud Platform (GCP)
+
+Dans un premier temps il faut que le code se situe sur un repository à part.
+
+TODO : vidéo 253
+
+L'environnement sur GCP doit être préparé avant de pouvoir effectuer le déploiement.
+
+TODO : vidéo 256 à 262
+
+TODO : 265
+
+GitHub Action va être configuré pour que les changements soient poussés sur GCP.
+
+TODO : vidéo 264 à 277 (il y a un script github fourni)
+
+On prépare ensuite l'environnement GCP notamment pour le serveur Ingress.
+
+TODO : vidéo 278 à 290
+
+## section 18 : skaffold pour faire du développement avec Kubernetes
+
+Skaffold permet de pouvoir mettre à jour son code source de façon dynamique.
+
+Ainsi on a pas besoin de redéployer les conteneurs.
+
+TODO
