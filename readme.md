@@ -871,23 +871,47 @@ Cela ouvre le navigateur :
 
 L'application va être déployée sur un compte Google Cloud Platform (GCP)
 
-Dans un premier temps il faut que le code se situe sur un repository à part.
+On a créé pour cela un projet :
 
-TODO : vidéo 253
+![dashboard](images/26_gcp_project.png)
 
-L'environnement sur GCP doit être préparé avant de pouvoir effectuer le déploiement.
+![dashboard](images/27_gcp_project_properties.png)
 
-TODO : vidéo 256 à 262
+On définit ensuite un compte qui a les droits d'administration sur le cluster :
 
-TODO : 265
+![dashboard](images/28_gcp_keys.png)
 
-GitHub Action va être configuré pour que les changements soient poussés sur GCP.
+Ces clés sont exportées dans un format JSON que l'on importe dans GitHub Action :
 
-TODO : vidéo 264 à 277 (il y a un script github fourni)
+![dashboard](images/29_gcp_github_secret.png)
 
-On prépare ensuite l'environnement GCP notamment pour le serveur Ingress.
+Un script de déploiement est déclanché automatiquement dans GitHub pour déployer l'application sur GCP : 
 
-TODO : vidéo 278 à 290
+![dashboard](images/30_gcp_github_push.png)
+
+On configure ensuite le mot de passe utilisé en interne pour l'accès à la base de donnée entre les conteneurs :
+
+![dashboard](images/31_gcp_kubectl%20secret.png)
+
+![dashboard](images/32_gcp_secret.png)
+
+On doit ensuite configurer Ingress pour interfacer l'application avec l'utilisateur final :
+
+![dashboard](images/33_gcp_helm_ingress.png)
+
+![dashboard](images/34_gcp_helm_ingress.png)
+
+![dashboard](images/35_gcp_help_ingress.png)
+
+L'application est finalement déployée : 
+
+![dashboard](images/36_gcp_env_deployed.png)
+
+![dashboard](images/37_gcp_env_exposed.png)
+
+On peut s'y connecter depuis internet : 
+
+![dashboard](images/38_gcp_deployed_app.png)
 
 ## section 18 : skaffold pour faire du développement avec Kubernetes
 
